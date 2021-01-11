@@ -31,6 +31,7 @@ class Player(Bot):
         self.hole_strengths = [0, 0, 0] #better representation of our hole strengths per round (win probability!)
         self.MONTE_CARLO_ITERS = 100 #the number of monte carlo samples we will use
 
+        #make sure this df isn't too big!! Loading data all at once might be slow if you did more computations!
         calculated_df = pd.read_csv('hole_strengths.csv') #the values we computed offline, this df is slow to search through though
         holes = calculated_df.Holes #the columns of our spreadsheet
         strengths = calculated_df.Strengths
@@ -75,18 +76,18 @@ class Player(Bot):
 
         hole: list - A list of two card strings in the engine's format (Kd, As, Th, 7d, etc.)
         '''
-        card_1 = hole[0]
+        card_1 = hole[0] #get all of our relevant info
         card_2 = hole[1]
 
-        rank_1, suit_1 = card_1[0], card_1[1]
+        rank_1, suit_1 = card_1[0], card_1[1] #card info
         rank_2, suit_2 = card_2[0], card_2[1]
 
-        numeric_1, numeric_2 = self.rank_to_numeric(rank_1), self.rank_to_numeric(rank_2)
+        numeric_1, numeric_2 = self.rank_to_numeric(rank_1), self.rank_to_numeric(rank_2) #make numeric
 
-        suited = suit_1 == suit_2
+        suited = suit_1 == suit_2 #off-suit or not
         suit_string = 's' if suited else 'o'
 
-        if numeric_1 >= numeric_2:
+        if numeric_1 >= numeric_2: #keep our hole cards in rank order
             return rank_1 + rank_2 + suit_string
         else:
             return rank_2 + rank_1 + suit_string
