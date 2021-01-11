@@ -55,7 +55,7 @@ if __name__ == '__main__':
     _MONTE_CARLO_ITERS = 10000
     _RANKS = 'AKQJT98765432' 
 
-    off_rank_holes = list(itertools.combinations(_RANKS, 2)) #all holes we can have except pocket pairs
+    off_rank_holes = list(itertools.combinations(_RANKS, 2)) #all holes we can have EXCEPT pocket pairs
     pocket_pair_holes = list(zip(_RANKS, _RANKS)) #all pocket pairs
 
     suited_strengths = [calculate_strength([hole[0] + 'c', hole[1] + 'c'], _MONTE_CARLO_ITERS) for hole in off_rank_holes] #all holes with the same suit
