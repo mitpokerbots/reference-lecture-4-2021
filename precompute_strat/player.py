@@ -32,13 +32,19 @@ class Player(Bot):
         self.MONTE_CARLO_ITERS = 100 #the number of monte carlo samples we will use
 
         calculated_df = pd.read_csv('hole_strengths.csv') #the values we computed offline, this df is slow to search through though
-        holes = calculated_df.Holes
+        holes = calculated_df.Holes #the columns of our spreadsheet
         strengths = calculated_df.Strengths
         self.starting_strengths = dict(zip(holes, strengths)) #convert to a dictionary, O(1) lookup time!
 
 
     def rank_to_numeric(self, rank):
-        if rank.isnumeric(): #2-9 
+        '''
+        Method that converts our given rank as a string
+        into an integer ranking
+
+        rank: str - one of 'A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2'
+        '''
+        if rank.isnumeric(): #2-9, we can just use the int version of this string
             return int(rank)
         elif rank == 'T': #10 is T, so we need to specify it here
             return 10
@@ -48,15 +54,27 @@ class Player(Bot):
             return 12
         elif rank == 'K':
             return 13
-        else: #Ace (A) is the only one left
+        else: #Ace (A) is the only one left, give it the highest rank
             return 14
 
 
     def sort_cards_by_rank(self, cards):
+        '''
+        Method that takes in a list of cards in the engine's format
+        and sorts them by rank order
+
+        cards: list - a list of card strings in the engine's format (Kd, As, Th, 7d, etc.)
+        '''
         return sorted(cards, reverse=True, key=lambda x: self.rank_to_numeric(x[0])) #we want it in descending order
 
 
     def hole_list_to_key(self, hole):
+        '''
+        Converts a hole card list into a key that we can use to query our 
+        strength dictionary
+
+        hole: list - A list of two card strings in the engine's format (Kd, As, Th, 7d, etc.)
+        '''
         card_1 = hole[0]
         card_2 = hole[1]
 
@@ -191,6 +209,12 @@ class Player(Bot):
 
 
     def assign_holes(self, hole_cards):
+        '''
+        A method that assigns the created hole cards to particular boards
+
+        hole_cards: list - a list of lists, where each list is a hole card pair in the
+                    engine's format
+        '''
 
         holes_and_strengths = [] #keep track of holes and their strengths
 
