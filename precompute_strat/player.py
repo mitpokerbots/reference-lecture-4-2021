@@ -29,7 +29,6 @@ class Player(Bot):
         ''' 
         self.board_allocations = [[], [], []] #keep track of our allocations at round start
         self.hole_strengths = [0, 0, 0] #better representation of our hole strengths per round (win probability!)
-        self.last_seen_street = 0
         self.MONTE_CARLO_ITERS = 100 #the number of monte carlo samples we will use
 
         calculated_df = pd.read_csv('hole_strengths.csv') #the values we computed offline, this df is slow to search through though
@@ -73,57 +72,6 @@ class Player(Bot):
             return rank_1 + rank_2 + suit_string
         else:
             return rank_2 + rank_1 + suit_string
-    
-
-    def calculate_strength(self, hole, board, iters): 
-        '''
-        A Monte Carlo method meant to estimate the win probability of a pair of 
-        hole cards. Simlulates 'iters' games and determines the win rates of our cards
-
-        Arguments:
-        hole: a list of our two hole cards
-        iters: a integer that determines how many Monte Carlo samples to take
-        '''
-
-        deck = eval7.Deck() #eval7 object!
-        hole_cards = [eval7.Card(card) for card in hole] #card objects, used to evaliate hands
-        board_cards = [eval7.Card(card) for card in board]
-
-        for card in hole_cards + board_cards: #remove cards that we know about! they shouldn't come up in simulations
-            deck.cards.remove(card) #this is slow! O(num_cards)
-        
-        _OPP = 2
-        _COMM = 5
-        _REMAINING = _COMM - len(board_cards)
-
-        score = 0
-
-        for _ in range(iters): #take 'iters' samples, slow! O(iters)
-            deck.shuffle() #make sure our samples are random, slow! O(num_cards)      
-
-            draw = deck.peek(_REMAINING + _OPP)
-
-            opp_hole = draw[: _OPP]
-            community = draw[_OPP: ]
-
-            our_hand = hole_cards + community + board_cards #the two showdown hands
-            opp_hand = opp_hole + community + board_cards
-
-            our_hand_value = eval7.evaluate(our_hand) #the ranks of our hands (only useful for comparisons)
-            opp_hand_value = eval7.evaluate(opp_hand)
-
-            if our_hand_value > opp_hand_value: #we win!
-                score += 2
-            
-            elif our_hand_value == opp_hand_value: #we tie.
-                score += 1
-            
-            else: #we lost....
-                score += 0
-        
-        hand_strength = score / (2 * iters) #this is our win probability!
-
-        return hand_strength #final complexity: O(num_cards * iters)
 
 
     def allocate_cards(self, my_cards):
@@ -348,15 +296,6 @@ class Player(Bot):
         stacks = [my_stack, opp_stack]
         net_upper_raise_bound = round_state.raise_bounds()[1] # max raise across 3 boards
         net_cost = 0 # keep track of the net additional amount you are spending across boards this round
-
-        if street != self.last_seen_street: #seen new card(s)! need to re-calculate strengths
-            self.last_seen_street = street
-            for i in range(NUM_BOARDS):
-                if not isinstance(round_state.board_states[i], TerminalState):
-                    my_hole = self.board_allocations[i]
-                    current_board = board_cards[i][:street]
-                    new_strength = self.calculate_strength(my_hole, current_board, self.MONTE_CARLO_ITERS)
-                    self.hole_strengths[i] = new_strength
 
         my_actions = [None] * NUM_BOARDS
         for i in range(NUM_BOARDS):
