@@ -52,7 +52,7 @@ def calculate_strength(hole, iters):
 
 if __name__ == '__main__':
 
-    _MONTE_CARLO_ITERS = 10000
+    _MONTE_CARLO_ITERS = 100000
     _RANKS = 'AKQJT98765432' 
 
     off_rank_holes = list(itertools.combinations(_RANKS, 2)) #all holes we can have EXCEPT pocket pairs (e.g. [(A, K), (A, Q), (A, J)...])
@@ -74,9 +74,4 @@ if __name__ == '__main__':
     hole_df['Strengths'] = all_strengths
 
     hole_df.to_csv('hole_strengths.csv', index=False) #save it for later use, trade space for time!
-
-
-
-
-   
 
